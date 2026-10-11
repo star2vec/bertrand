@@ -1,4 +1,4 @@
-# pilot
+# Running the code
 
 Bertrand pilot: can a small model's choice of approach (endpoints 1/3, radial 1/2, midpoint 1/4) be read from its
 activations before it writes, and can that direction steer what it writes? Running log in `LOG.md`.
