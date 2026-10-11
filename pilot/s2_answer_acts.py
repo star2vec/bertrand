@@ -71,13 +71,13 @@ def char_to_tok(offsets, c):
     return len(offsets)
 
 
-def load_answers(tag):
+def load_answers(tag, judged="derived"):  # judged: "derived" (supported) or "recalled" (unsupported)
     judge = read_jsonl(RESULTS / "s1" / f"judge_{tag}.jsonl")
     neutral = {(r["wording_id"], r["sample"]): r for r in read_jsonl(RESULTS / "s1" / f"neutral_{tag}.jsonl")
                if r.get("kind") == "answer"}
     rows = []
     for j in judge:
-        if j["derived_or_recalled"] != "derived":
+        if j["derived_or_recalled"] != judged:
             continue
         r = neutral[(j["wording_id"], j["sample"])]
         rows.append(dict(wording_id=j["wording_id"], sample=j["sample"], final_number=j["final_number"],

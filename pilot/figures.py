@@ -480,8 +480,62 @@ def fig_when():
                         "within each phrasing reaches (95th percentile of 50 shuffles); a probe above this line reads more than the phrasing.")
 
 
+# ---------------------------------------------------------------- 8 when, supported vs unsupported
+def fig_when_su():
+    B = json.loads((RESULTS / "s2" / "word_probe_binary_qwen7b.json").read_text(encoding="utf-8"))
+    L, ks = str(B["layer"]), B["offsets"]
+    xs = np.arange(len(ks))
+    sup = [100 * B["curves"]["supported"][str(k)][L]["bal"] for k in ks]
+    uns = [100 * B["curves"]["unsupported"][str(k)][L]["bal"] for k in ks]
+    sup_null = [100 * B["nulls"]["supported"][str(k)]["null_within"]["bal_p95"] for k in ks]
+    uns_null = [100 * B["nulls"]["unsupported"][str(k)]["null_within"]["bal_p95"] for k in ks]
+    mt = [100 * B["matched"][str(k)]["mean"] for k in ks]
+    lo = [100 * B["matched"][str(k)]["p5"] for k in ks]
+    hi = [100 * B["matched"][str(k)]["p95"] for k in ks]
+    c = B["counts"]
+    C_SUP, C_UNS, C_MT = INK, "#a0522d", "#6f8fb8"
+    fig, ax = plt.subplots(figsize=(WIDTH_IN, 6.2))
+    fig.subplots_adjust(left=0.1, right=0.97, top=0.97, bottom=0.14)
+    ax.fill_between(xs, lo, hi, color=C_MT, alpha=0.15, lw=0)
+    ax.plot(xs, sup, "-o", color=C_SUP, lw=3, ms=8, label=f"supported (n={c['supported']['n']})")
+    ax.plot(xs, mt, "-D", color=C_MT, lw=2.2, ms=6,
+            label=f"supported, random {c['unsupported']['n']}-answer subsets (mean of {B['n_subsets']})")
+    ax.plot(xs, uns, "-s", color=C_UNS, lw=3, ms=8, label=f"unsupported (n={c['unsupported']['n']})")
+    ax.plot(xs, sup_null, "--", color=C_SUP, lw=1.6, alpha=0.7, label="within-phrasing shuffle, 95th pct (supported)")
+    ax.plot(xs, uns_null, "--", color=C_UNS, lw=1.6, alpha=0.7, label="within-phrasing shuffle, 95th pct (unsupported)")
+    ax.axhline(50, ls=":", color="#999999", lw=1.6)
+    ax.text(len(ks) - 0.65, 27, "dotted: chance 50%", color="#777777", fontsize=13, ha="right")
+    ax.set_xticks(xs); ax.set_xticklabels([str(k) for k in ks]); ax.set_xlim(-0.4, len(ks) - 0.6)
+    ax.set_ylim(25, 102)
+    ax.set_xlabel("tokens before the branch word")
+    ax.set_ylabel("balanced accuracy, 1/3 vs not (%)")
+    ax.legend(loc="upper left", frameon=False, fontsize=12)
+    save(fig, "when_supported_vs_unsupported")
+    med = B["median_anchor_token"]
+    note("when, supported vs unsupported", [
+        f"x (tokens before the branch word, equally spaced): {ks}; layer {L}; label 1/3 vs not",
+        "supported probe (%): " + ", ".join(f"{v:.1f}" for v in sup),
+        "supported within-phrasing shuffle 95th pct (%): " + ", ".join(f"{v:.1f}" for v in sup_null),
+        "supported, 56-answer subsets, mean (%): " + ", ".join(f"{v:.1f}" for v in mt),
+        "supported, 56-answer subsets, 5th–95th pct band (%): " + ", ".join(f"{a:.1f}–{b:.1f}" for a, b in zip(lo, hi)),
+        "unsupported probe (%): " + ", ".join(f"{v:.1f}" for v in uns),
+        "unsupported within-phrasing shuffle 95th pct (%): " + ", ".join(f"{v:.1f}" for v in uns_null),
+        "chance: 50%",
+        f"n: supported {c['supported']['n']} ({c['supported']['one_third']} 1/3 / {c['supported']['not_one_third']} not; "
+        f"328 / 333 at k = 30 / 20), unsupported {c['unsupported']['n']} ({c['unsupported']['one_third']} / {c['unsupported']['not_one_third']})",
+        f"median anchor token: supported {med['supported']:.0f}, unsupported {med['unsupported']:.0f}"])
+    CAPTIONS["when_supported_vs_unsupported"] = (
+        f"Whether the 7B's final number is 1/3 can be read from the residual stream (layer {L}) at positions before the "
+        f"first word that names the variable, for answers whose steps support the boxed number (supported, n = "
+        f"{c['supported']['n']}) and answers whose steps do not (unsupported, n = {c['unsupported']['n']}). Light blue: the "
+        f"supported probe on random subsets the size and class mix of the unsupported set (mean of {B['n_subsets']}, band "
+        f"5th–95th percentile). Dashed: 95th percentile of labels shuffled within phrasing; a probe above its line reads "
+        f"more than the phrasing. The unsupported curve rests on {c['unsupported']['n']} answers. Median position of the "
+        f"branch word: token {med['supported']:.0f} (supported), {med['unsupported']:.0f} (unsupported).")
+
+
 def main():
-    for f in (fig_header, fig_phrasings, fig_which, fig_how, fig_famous, fig_where, fig_when):
+    for f in (fig_header, fig_phrasings, fig_which, fig_how, fig_famous, fig_where, fig_when, fig_when_su):
         f()
     (OUT / "numbers.md").write_text("# Numbers drawn in each figure\n\n" + "\n".join(NUMBERS) + "\n", encoding="utf-8")
     (OUT / "captions.md").write_text("# Figure captions\n\n" + "\n\n".join(f"**{k}.** {v}" for k, v in CAPTIONS.items()) + "\n",

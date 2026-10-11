@@ -34,21 +34,27 @@ def main():
     ap.add_argument("--device", default=None)
     ap.add_argument("--layers", type=int, nargs="+", default=None)
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--set", default="supported", choices=["supported", "unsupported"],
+                    help="judged answers to use: supported (steps lead to the boxed number) or unsupported")
     args = ap.parse_args()
     name = resolve_model(args.model)
     tag = model_tag(name)
     from transformers import AutoTokenizer
     tok = AutoTokenizer.from_pretrained(name)
 
-    rows = load_answers(tag)
+    rows = load_answers(tag, "derived" if args.set == "supported" else "recalled")
+    suffix = "" if args.set == "supported" else "_unsupported"
     measure(tok, rows)  # sets answer_ids, formula_tok, word_tok, word_match
     for r in rows:
         enc = tok(r["answer"], return_offsets_mapping=True, add_special_tokens=False)
         m = STRICT.search(r["answer"])
         r["strict_tok"] = char_to_tok(enc["offset_mapping"], m.start()) if m else None
         r["strict_match"] = m.group(0) if m else None
-        r["formula_before_word"] = r["formula_tok"] is not None and r["formula_tok"] < r["word_tok"]
+        r["formula_before_word"] = r["formula_tok"] is not None and r["word_tok"] is not None and r["formula_tok"] < r["word_tok"]
+    n_judged = len(rows)
+    no_word = [(r["wording_id"], r["sample"], r["final_number"]) for r in rows if r["word_tok"] is None]
     rows = [r for r in rows if r["word_tok"] is not None]
+    print(f"{args.set}: {n_judged} answers, {len(no_word)} never name the variable in words (dropped): {no_word}", file=sys.stderr)
     if args.limit:
         rows = rows[: args.limit]
     n_re = sum(r["strict_tok"] is not None and r["strict_tok"] != r["word_tok"] for r in rows)
@@ -85,14 +91,15 @@ def main():
             if (i + 1) % 50 == 0 or i + 1 == n:
                 print(f"  {i + 1}/{n}  {time.time() - t0:.0f}s", file=sys.stderr)
 
-    path = RESULTS / "s2" / f"acts_word_{tag}.npz"
+    path = RESULTS / "s2" / f"acts_word_{tag}{suffix}.npz"
     np.savez(path, layers=np.array(layers), offsets=np.array(OFFSETS), word=out["word"], strict=out["strict"],
              word_ok=ok["word"], strict_ok=ok["strict"])
     keep = ("wording_id", "sample", "final_number", "label", "variable", "heldout_wording", "prompt", "word_tok",
             "word_match", "strict_tok", "strict_match", "formula_tok", "formula_before_word", "token_at_t",
             "prompt_tokens", "text_upto")
-    meta = run_meta(name, device, "forward", n=n, layers=layers, offsets=OFFSETS, n_reanchored=n_re, n_no_strict=n_drop)
-    write_jsonl(RESULTS / "s2" / f"acts_word_{tag}_meta.jsonl", [dict(kind="meta", **meta)] + [{k: r[k] for k in keep} for r in rows])
+    meta = run_meta(name, device, "forward", n=n, layers=layers, offsets=OFFSETS, n_reanchored=n_re, n_no_strict=n_drop,
+                    set=args.set, n_judged=n_judged, no_word=no_word)
+    write_jsonl(RESULTS / "s2" / f"acts_word_{tag}{suffix}_meta.jsonl", [dict(kind="meta", **meta)] + [{k: r[k] for k in keep} for r in rows])
     print(f"wrote {path} {out['word'].shape}; valid per offset {dict(zip(OFFSETS, ok['word'].sum(0).tolist()))}", file=sys.stderr)
 
 

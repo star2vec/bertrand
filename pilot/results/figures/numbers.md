@@ -51,3 +51,16 @@ within-phrasing shuffle, 95th percentile, 50 shuffles (%): 40.6, 40.5, 46.4, 46.
 chance: 33.3%
 n per offset: 328, 333, 342, 342, 342, 342, 342
 
+## when, supported vs unsupported
+
+x (tokens before the branch word, equally spaced): [30, 20, 10, 5, 2, 1, 0]; layer 22; label 1/3 vs not
+supported probe (%): 62.5, 68.1, 74.4, 79.2, 86.8, 92.3, 97.6
+supported within-phrasing shuffle 95th pct (%): 60.6, 62.3, 63.7, 64.8, 72.1, 67.1, 76.2
+supported, 56-answer subsets, mean (%): 49.9, 52.6, 59.6, 63.5, 74.4, 87.1, 96.7
+supported, 56-answer subsets, 5th–95th pct band (%): 44.7–56.0, 42.2–63.3, 46.2–72.6, 46.4–75.2, 61.3–86.5, 78.2–93.3, 90.2–100.0
+unsupported probe (%): 40.8, 38.2, 53.1, 47.5, 44.7, 38.3, 55.8
+unsupported within-phrasing shuffle 95th pct (%): 48.8, 54.2, 54.5, 53.1, 54.3, 52.9, 57.1
+chance: 50%
+n: supported 342 (142 1/3 / 200 not; 328 / 333 at k = 30 / 20), unsupported 56 (38 / 18)
+median anchor token: supported 110, unsupported 142
+

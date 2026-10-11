@@ -344,3 +344,36 @@ n per offset: 328, 333, 342, 342, 342, 342, 342
 - **header (b), adjusted:** the radius is now at 262°, tilted 8° off straight down so it is not perpendicular to the triangle's base. The point is at 0.15 r, and the chord ends are 13° from the nearest vertex. The inner-half line is drawn at 55% opacity.
 - **header (b):** the inner-half band now matches the arc band in (a): 0.1 r wide (about 7.7 pt), 35% opacity, drawn under the radius line.
 - **header (b):** the inner-half band is now wider: 0.2 r (about 15 pt), at 45% opacity.
+
+## 2026-10-11 — branch-word probe on unsupported 7B answers (1/3 vs not), next to supported
+
+- **Cache check:** Qwen2.5-3B-Instruct is not in the Hugging Face cache. It was deleted on 2026-10-10 as asked; nothing was downloaded.
+- **Naming:** from here on, the judge's categories are called **supported** (the written steps lead to the boxed number) and **unsupported** (they do not). The data keys stay `derived_or_recalled` = `derived` / `recalled`.
+- **Answers:**
+  - **Unsupported:** 58 answers (1/3 40, 1/2 16, 1/4 2). Two never name the variable in words and were dropped: phrasing 0 sample 5, and phrasing 12 sample 1, both 1/3. That leaves 56: 38 end in 1/3 and 18 do not, over 16 phrasings.
+  - **Supported:** 342 answers, 142 1/3 and 200 not. None was dropped.
+  - **Branch word, median token:** 110 for supported, 142 for unsupported.
+- **Setup:**
+  - **Recording:** the residual stream at layers 0, 2, …, 28, at 30, 20, 10, 5, 2, 1 and 0 tokens before the branch word.
+  - **Probe:** binary, final number 1/3 or not; same probe and phrasing folds as before.
+  - **Score:** balanced accuracy, where chance is 50%.
+  - **Plotted layer:** 22, fixed in advance as the layer of the earlier curve. There, both nulls were run with 50 shuffles.
+  - **Words-only baseline:** TF-IDF on prompt + answer text up to that point.
+  - **Size-matched curve:** the supported probe rerun on 20 random subsets of 56 supported answers, with the same 38 / 18 split.
+  - **Figure:** `results/figures/when_supported_vs_unsupported.png`; tables in `results/s2/summary_word_binary_qwen7b.md`.
+
+| tokens before | supported | within null p95 | global null p95 | words | supported, 56-answer subsets: mean (5th–95th) | unsupported | within null p95 | global null p95 | words |
+|---|---|---|---|---|---|---|---|---|---|
+| 30 | 63% | 61% | 54% | 57% | 50% (45–56%) | 41% | 49% | 54% | 49% |
+| 20 | 68% | 62% | 56% | 63% | 53% (42–63%) | 38% | 54% | 56% | 47% |
+| 10 | 74% | 64% | 56% | 69% | 60% (46–73%) | 53% | 54% | 56% | 45% |
+| 5 | 79% | 65% | 57% | 66% | 63% (46–75%) | 48% | 53% | 56% | 47% |
+| 2 | 87% | 72% | 59% | 73% | 74% (61–86%) | 45% | 54% | 56% | 47% |
+| 1 | 92% | 67% | 56% | 76% | 87% (78–93%) | 38% | 53% | 56% | 47% |
+| 0 | 98% | 76% | 60% | 94% | 97% (90–100%) | 56% | 57% | 58% | 47% |
+
+- **Supported:** whether the boxed number will be 1/3 is barely above the within-phrasing shuffle 30 tokens before the branch word (63% against 61%). It rises steadily to 87–92% in the last two tokens and 98% at the word, above both the shuffle and the words.
+- **Supported, 56-answer subsets:** with only 56 answers the supported probe sits near chance until about 5 tokens before the word (50–63%). It still climbs to 87–97% in the last two tokens. So a set this small can show the late rise.
+- **Unsupported:** the probe stays at or below its within-phrasing shuffle at every offset (38–56%), even at the branch word itself. Before and at the point where an unsupported answer names its variable, the residual stream does not tell whether its boxed number will be 1/3. The words do no better (45–49%).
+- **Small n:** the unsupported set is small. Each test fold holds about 9 answers, and many phrasings have only a few unsupported answers, so the within-phrasing shuffle only moves labels where a phrasing has both classes.
+- **Why the unsupported curve stays flat:** in these answers the branch word is mostly an angle word (subtend 24, central angle 12), whether the box ends up 1/3 or not. So the variable the answer names does not fix its final number, unlike in supported answers.
