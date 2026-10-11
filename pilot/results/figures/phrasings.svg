@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-10-11T15:04:19.008030</dc:date>
+    <dc:date>2026-10-11T17:34:00.690044</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -36,7 +36,7 @@ L 694.8 33.696
 L 25.2 33.696 
 L 25.2 111.456 
 z
-" clip-path="url(#p630d35ff45)" style="fill: none; stroke: #bbbbbb; stroke-width: 1.2; stroke-linejoin: miter"/>
+" clip-path="url(#p636e7664f4)" style="fill: none; stroke: #bbbbbb; stroke-width: 1.2; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 25.2 215.784 
@@ -45,7 +45,7 @@ L 694.8 162.648
 L 25.2 162.648 
 L 25.2 215.784 
 z
-" clip-path="url(#p630d35ff45)" style="fill: none; stroke: #bbbbbb; stroke-width: 1.2; stroke-linejoin: miter"/>
+" clip-path="url(#p636e7664f4)" style="fill: none; stroke: #bbbbbb; stroke-width: 1.2; stroke-linejoin: miter"/>
    </g>
    <g id="patch_4">
     <path d="M 25.2 344.736 
@@ -54,7 +54,7 @@ L 694.8 266.976
 L 25.2 266.976 
 L 25.2 344.736 
 z
-" clip-path="url(#p630d35ff45)" style="fill: none; stroke: #bbbbbb; stroke-width: 1.2; stroke-linejoin: miter"/>
+" clip-path="url(#p636e7664f4)" style="fill: none; stroke: #bbbbbb; stroke-width: 1.2; stroke-linejoin: miter"/>
    </g>
    <g id="patch_5">
     <path d="M 25.2 522.936 
@@ -63,7 +63,7 @@ L 694.8 395.928
 L 25.2 395.928 
 L 25.2 522.936 
 z
-" clip-path="url(#p630d35ff45)" style="fill: none; stroke: #bbbbbb; stroke-width: 1.2; stroke-linejoin: miter"/>
+" clip-path="url(#p636e7664f4)" style="fill: none; stroke: #bbbbbb; stroke-width: 1.2; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <text style="font-style: italic; font-size: 14px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #555555" x="28.8" y="30.077812" transform="rotate(-0 28.8 30.077812)">canonical problem statement</text>
@@ -78,7 +78,7 @@ z
     <text style="font-size: 15px; font-family: 'DejaVu Sans'; text-anchor: start" x="43.2" y="106.005656" transform="rotate(-0 43.2 106.005656)">than a side of the triangle?</text>
    </g>
    <g id="text_5">
-    <text style="font-style: italic; font-size: 14px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #555555" x="28.8" y="159.029813" transform="rotate(-0 28.8 159.029813)">rephrasing 16: numeric threshold</text>
+    <text style="font-style: italic; font-size: 14px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #555555" x="28.8" y="159.029813" transform="rotate(-0 28.8 159.029813)">rephrasing 16: numeric comparison length</text>
    </g>
    <g id="text_6">
     <text style="font-size: 15px; font-family: 'DejaVu Sans'; text-anchor: start" x="43.2" y="185.709656" transform="rotate(-0 43.2 185.709656)">Given a circle of radius 5, what is the chance that a chord drawn at random is</text>
@@ -135,7 +135,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p630d35ff45">
+  <clipPath id="p636e7664f4">
    <rect x="0" y="0" width="720" height="570.24"/>
   </clipPath>
  </defs>

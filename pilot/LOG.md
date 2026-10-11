@@ -377,3 +377,14 @@ n per offset: 328, 333, 342, 342, 342, 342, 342
 - **Unsupported:** the probe stays at or below its within-phrasing shuffle at every offset (38–56%), even at the branch word itself. Before and at the point where an unsupported answer names its variable, the residual stream does not tell whether its boxed number will be 1/3. The words do no better (45–49%).
 - **Small n:** the unsupported set is small. Each test fold holds about 9 answers, and many phrasings have only a few unsupported answers, so the within-phrasing shuffle only moves labels where a phrasing has both classes.
 - **Why the unsupported curve stays flat:** in these answers the branch word is mostly an angle word (subtend 24, central angle 12), whether the box ends up 1/3 or not. So the variable the answer names does not fix its final number, unlike in supported answers.
+
+## 2026-10-11 — figures relabeled to the post's terms
+
+- **Terms:** the figures, captions and `results/figures/numbers.md` now say:
+  - explained / unexplained, for derived / recalled and supported / unsupported;
+  - comparison length, for threshold phrasing;
+  - phrasing, for wording;
+  - specified, for labeled.
+- **Legend in how:** the explained colors are "angle at the center", "distance from the center" and "midpoint in the disk".
+- **Bars in how:** the hatched (unexplained) blocks now have the same width and the same thin white edge as the solid bars.
+- **Unchanged:** the file names and the data keys.

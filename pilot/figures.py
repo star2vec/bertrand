@@ -184,7 +184,7 @@ def fig_phrasings():
     L = rng.choice(lab)
     clause = L["text"].replace(P[0]["text"], "").strip()
     boxes = [("canonical problem statement", P[0]["text"], None),
-             (f"rephrasing {numeric}: numeric threshold", P[numeric]["text"], None),
+             (f"rephrasing {numeric}: numeric comparison length", P[numeric]["text"], None),
              (f"rephrasing {no_r}: no radius", P[no_r]["text"], None),
              (f"canonical statement plus a clause for {APP2NUM[L['approach']]}", L["text"], clause)]
     fig = plt.figure(figsize=(WIDTH_IN, 9.0 * 0.88))
@@ -209,12 +209,12 @@ def fig_phrasings():
         ax.add_patch(Rectangle((0.035, y + 0.012), 0.93, top - y - 0.006, fill=False, ec="#bbbbbb", lw=1.2))
         y -= 0.045
     save(fig, "phrasings")
-    note("phrasings", [f"canonical id 0; rephrasings id {numeric} (numeric threshold) and id {no_r} (no radius), picked with "
-                       f"random.Random(0) within those groups; labeled prompt {L['id']} (approach {L['approach']}, description "
+    note("phrasings", [f"canonical id 0; rephrasings id {numeric} (numeric comparison length) and id {no_r} (no radius), picked with "
+                       f"random.Random(0) within those groups; specified prompt {L['id']} (approach {L['approach']}, description "
                        f"{L['desc_id']}, clause {L['position']} the problem)",
                        f"highlighted clause: \"{clause}\""])
     CAPTIONS["phrasings"] = ("Prompts as the model sees them. Top: the canonical Bertrand problem statement and two of the 17 "
-                             "rephrasings, one stating the threshold as a number and one giving no radius. Bottom: the "
+                             "rephrasings, one stating the comparison length as a number and one giving no radius. Bottom: the "
                              "canonical statement plus a clause that states the approach for 1/4 (highlighted).")
 
 
@@ -224,7 +224,7 @@ def fig_which():
     order = sorted(P, key=lambda w: (THR_ORDER.index(P[w]["threshold"]), RAD_ORDER.index(P[w]["radius"]), w))
     fig, axes = plt.subplots(2, 1, figsize=(WIDTH_IN, 7.6), sharex=True)
     fig.subplots_adjust(left=0.09, right=0.985, top=0.9, bottom=0.2, hspace=0.18)
-    lines = [f"x order (threshold, radius, id): " + ", ".join(f"{w}({THR_LABEL[P[w]['threshold']]},{RAD_LABEL[P[w]['radius']]})" for w in order)]
+    lines = [f"x order (comparison length, radius, id): " + ", ".join(f"{w}({THR_LABEL[P[w]['threshold']]},{RAD_LABEL[P[w]['radius']]})" for w in order)]
     GAP = 0.7  # extra space between threshold groups
     x = np.array([i + GAP * THR_ORDER.index(P[w]["threshold"]) for i, w in enumerate(order)])
     for ax, tag, name in zip(axes, ["qwen3b", "qwen7b"], ["3B", "7B"]):
@@ -258,14 +258,14 @@ def fig_which():
     save(fig, "which")
     note("which", lines)
     CAPTIONS["which"] = ("Which number each model gives on each phrasing of the neutral problem (30 samples per phrasing, "
-                         "temperature 0.7, label = final number). Phrasings are grouped by how the threshold is stated "
+                         "temperature 0.7, label = final number). Phrasings are grouped by how the comparison length is stated "
                          "(triangle side, r√3, or a number) and by radius (\"no r\": radius not given).")
 
 
 # ---------------------------------------------------------------- 4 how
 def fig_how():
     fig, ax = plt.subplots(figsize=(WIDTH_IN, 6.2))
-    fig.subplots_adjust(left=0.1, right=0.72, top=0.97, bottom=0.17)
+    fig.subplots_adjust(left=0.1, right=0.6, top=0.97, bottom=0.17)
     lines = []
     xs, labels = [], []
     for i, num in enumerate(NUMS):
@@ -280,27 +280,30 @@ def fig_how():
                     ax.bar(x, der[var], bottom=b, width=0.85, color=COL[VAR2NUM.get(var, "other")], edgecolor="white", lw=0.6)
                     b += der[var]
             nrec = sum(rec.values())
-            ax.bar(x, nrec, bottom=b, width=0.85, **recalled_patch_kw(num))
+            ax.bar(x, nrec, bottom=b, width=0.85, facecolor=matplotlib.colors.to_rgba(COL[num], 0.18), edgecolor=COL[num],
+                   hatch="//", lw=0)  # hatch only; the hatch takes the edge color
+            ax.bar(x, nrec, bottom=b, width=0.85, fill=False, edgecolor="white", lw=0.6)  # same edge as the solid bars
             ax.text(x, b + nrec + 3, f"{b}/{nrec}", ha="center", va="bottom", fontsize=12)
             xs.append(x); labels.append(name)
-            lines.append(f"{name} {num}: derived {b} (" + ", ".join(f"{VAR_SHORT.get(k, k)} {v}" for k, v in der.items()) +
-                         f"); recalled {nrec} (" + ", ".join(f"{VAR_SHORT.get(k, k)} {v}" for k, v in rec.most_common()) + ")")
+            lines.append(f"{name} {num}: explained {b} (" + ", ".join(f"{k} {v}" for k, v in der.items()) +
+                         f"); unexplained {nrec} (" + ", ".join(f"{k} {v}" for k, v in rec.most_common()) + ")")
         ax.text(i * 2.6 + 0.5, -0.13, num, transform=matplotlib.transforms.blended_transform_factory(ax.transData, ax.transAxes),
                 ha="center", va="top", fontsize=20, color=COL[num], fontweight="bold")
     ax.set_xticks(xs); ax.set_xticklabels(labels)
     ax.set_ylabel("answers ending in that number")
     from matplotlib.patches import Patch
-    handles = [Patch(color=COL["1/3"], label="derived: angle"), Patch(color=COL["1/2"], label="derived: distance"),
-               Patch(color=COL["1/4"], label="derived: midpoint"),
-               Patch(**recalled_patch_kw("other"), label="recalled\n(hatched, in the\nnumber's color)")]
-    ax.legend(handles=handles, loc="upper left", bbox_to_anchor=(1.02, 1.0), frameon=False)
-    ax.text(1.03, 0.52, "bar labels: derived/recalled", transform=ax.transAxes, fontsize=12, color="#555555")
+    handles = [Patch(color=COL["1/3"], label="angle at the center"), Patch(color=COL["1/2"], label="distance from the center"),
+               Patch(color=COL["1/4"], label="midpoint in the disk"),
+               Patch(facecolor=matplotlib.colors.to_rgba(COL["other"], 0.18), edgecolor=COL["other"], hatch="//", lw=0, label="unexplained\n(hatched, in the\nnumber's color)")]
+    ax.legend(handles=handles, loc="upper left", bbox_to_anchor=(1.02, 1.0), frameon=False, title="explained:",
+              title_fontsize=14, alignment="left")
+    ax.text(1.03, 0.45, "bar labels: explained/unexplained", transform=ax.transAxes, fontsize=12, color="#555555")
     save(fig, "how")
     note("how", lines)
-    CAPTIONS["how"] = ("How the neutral answers ending in 1/3, 1/2 or 1/4 got there, by hand judgment. Solid: derived "
+    CAPTIONS["how"] = ("How the neutral answers ending in 1/3, 1/2 or 1/4 got there, by hand judgment. Solid: explained "
                        "(the written steps produce the number), colored by the variable treated as evenly spread; every "
-                       "derived 1/3 uses the angle, every derived 1/2 the distance, every derived 1/4 the midpoint, so the "
-                       "colors match the numbers. Hatched: recalled (the working gives something else, or the number is "
+                       "explained 1/3 uses the angle, every explained 1/2 the distance, every explained 1/4 the midpoint, so the "
+                       "colors match the numbers. Hatched: unexplained (the working gives something else, or the number is "
                        "just stated). 3B: 361 answers; 7B: 400.")
 
 
@@ -332,10 +335,10 @@ def fig_famous():
             ax.bar(x, 100 * share, width=0.36, color=col, label=name if i == 0 else None)
             ax.text(x, 100 * share + 1.5, f"{100 * share:.0f}%", ha="center", va="bottom", fontsize=12)
             ax.text(x, 3, f"{d}/\n{len(S)}", ha="center", va="bottom", fontsize=10, color="white" if j else INK)
-            lines.append(f"{name} {THR_LABEL[thr]}: derived {d}/{len(S)} = {100 * share:.0f}%")
+            lines.append(f"{name} {THR_LABEL[thr]}: explained {d}/{len(S)} = {100 * share:.0f}%")
     ax.set_xticks(range(3)); ax.set_xticklabels([THR_LABEL[t] for t in THR_ORDER])
-    ax.set_ylim(0, 115); ax.set_yticks([0, 25, 50, 75, 100]); ax.set_ylabel("derived share (%)")
-    ax.set_xlabel("threshold phrasing")
+    ax.set_ylim(0, 115); ax.set_yticks([0, 25, 50, 75, 100]); ax.set_ylabel("explained share (%)")
+    ax.set_xlabel("comparison length")
     ax.legend(loc="upper left", frameon=False, ncol=2)
     # right: one recalled 1/3, math rendered
     rows = {(r["wording_id"], r["sample"]): r for r in read_jsonl(RESULTS / "s1" / "neutral_qwen7b.jsonl") if r.get("kind") == "answer"}
@@ -376,7 +379,7 @@ def fig_famous():
                  f"rendered with mathtext; highlighted line 26 (computes 2/3) and line 29 (boxed 1/3)")
     note("famous number", lines)
     CAPTIONS["famous_number"] = ("Left: share of hand-judged answers whose steps actually produce their number, by how the "
-                                 "threshold is phrased. Right: a recalled 1/3 from the 7B (real answer, lines removed where "
+                                 "comparison length is stated. Right: an unexplained 1/3 from the 7B (real answer, lines removed where "
                                  "marked …): the working gives 2/3, the boxed answer is the famous 1/3.")
 
 
@@ -431,7 +434,7 @@ def fig_where():
     ax.text(1.0, by - row_h - 1.0, "grey boxes: the first 60 answer tokens, used by the earlier probe", fontsize=12, color="#555555", va="center")
     ax.text(1.0, by - row_h - 6.0, "dots: 30, 10, 5 and 1 tokens before the branch word", fontsize=12, color="#555555", va="center")
     save(fig, "where_we_look")
-    note("where we look", [f"7B phrasing {STRIP_EXAMPLE[0]} sample {STRIP_EXAMPLE[1]} (final number {m['final_number']}, derived); "
+    note("where we look", [f"7B phrasing {STRIP_EXAMPLE[0]} sample {STRIP_EXAMPLE[1]} (final number {m['final_number']}, explained); "
                            f"prompt {len(p_ids)} tokens, last 4 shown; answer tokens 0–{min(w_end + 3, len(a_ids)) - 1} shown; "
                            f"first 60 answer tokens (0–59) shaded grey; branch word \"{m['word_match']}\" (tokens {t}–{w_end - 1}); "
                            f"dots at answer tokens {t - 30}, {t - 10}, {t - 5}, {t - 1}",
@@ -497,12 +500,12 @@ def fig_when_su():
     fig, ax = plt.subplots(figsize=(WIDTH_IN, 6.2))
     fig.subplots_adjust(left=0.1, right=0.97, top=0.97, bottom=0.14)
     ax.fill_between(xs, lo, hi, color=C_MT, alpha=0.15, lw=0)
-    ax.plot(xs, sup, "-o", color=C_SUP, lw=3, ms=8, label=f"supported (n={c['supported']['n']})")
+    ax.plot(xs, sup, "-o", color=C_SUP, lw=3, ms=8, label=f"explained (n={c['supported']['n']})")
     ax.plot(xs, mt, "-D", color=C_MT, lw=2.2, ms=6,
-            label=f"supported, random {c['unsupported']['n']}-answer subsets (mean of {B['n_subsets']})")
-    ax.plot(xs, uns, "-s", color=C_UNS, lw=3, ms=8, label=f"unsupported (n={c['unsupported']['n']})")
-    ax.plot(xs, sup_null, "--", color=C_SUP, lw=1.6, alpha=0.7, label="within-phrasing shuffle, 95th pct (supported)")
-    ax.plot(xs, uns_null, "--", color=C_UNS, lw=1.6, alpha=0.7, label="within-phrasing shuffle, 95th pct (unsupported)")
+            label=f"explained, random {c['unsupported']['n']}-answer subsets (mean of {B['n_subsets']})")
+    ax.plot(xs, uns, "-s", color=C_UNS, lw=3, ms=8, label=f"unexplained (n={c['unsupported']['n']})")
+    ax.plot(xs, sup_null, "--", color=C_SUP, lw=1.6, alpha=0.7, label="within-phrasing shuffle, 95th pct (explained)")
+    ax.plot(xs, uns_null, "--", color=C_UNS, lw=1.6, alpha=0.7, label="within-phrasing shuffle, 95th pct (unexplained)")
     ax.axhline(50, ls=":", color="#999999", lw=1.6)
     ax.text(len(ks) - 0.65, 27, "dotted: chance 50%", color="#777777", fontsize=13, ha="right")
     ax.set_xticks(xs); ax.set_xticklabels([str(k) for k in ks]); ax.set_xlim(-0.4, len(ks) - 0.6)
@@ -512,26 +515,26 @@ def fig_when_su():
     ax.legend(loc="upper left", frameon=False, fontsize=12)
     save(fig, "when_supported_vs_unsupported")
     med = B["median_anchor_token"]
-    note("when, supported vs unsupported", [
+    note("when, explained vs unexplained", [
         f"x (tokens before the branch word, equally spaced): {ks}; layer {L}; label 1/3 vs not",
-        "supported probe (%): " + ", ".join(f"{v:.1f}" for v in sup),
-        "supported within-phrasing shuffle 95th pct (%): " + ", ".join(f"{v:.1f}" for v in sup_null),
-        "supported, 56-answer subsets, mean (%): " + ", ".join(f"{v:.1f}" for v in mt),
-        "supported, 56-answer subsets, 5th–95th pct band (%): " + ", ".join(f"{a:.1f}–{b:.1f}" for a, b in zip(lo, hi)),
-        "unsupported probe (%): " + ", ".join(f"{v:.1f}" for v in uns),
-        "unsupported within-phrasing shuffle 95th pct (%): " + ", ".join(f"{v:.1f}" for v in uns_null),
+        "explained probe (%): " + ", ".join(f"{v:.1f}" for v in sup),
+        "explained within-phrasing shuffle 95th pct (%): " + ", ".join(f"{v:.1f}" for v in sup_null),
+        "explained, 56-answer subsets, mean (%): " + ", ".join(f"{v:.1f}" for v in mt),
+        "explained, 56-answer subsets, 5th–95th pct band (%): " + ", ".join(f"{a:.1f}–{b:.1f}" for a, b in zip(lo, hi)),
+        "unexplained probe (%): " + ", ".join(f"{v:.1f}" for v in uns),
+        "unexplained within-phrasing shuffle 95th pct (%): " + ", ".join(f"{v:.1f}" for v in uns_null),
         "chance: 50%",
-        f"n: supported {c['supported']['n']} ({c['supported']['one_third']} 1/3 / {c['supported']['not_one_third']} not; "
-        f"328 / 333 at k = 30 / 20), unsupported {c['unsupported']['n']} ({c['unsupported']['one_third']} / {c['unsupported']['not_one_third']})",
-        f"median anchor token: supported {med['supported']:.0f}, unsupported {med['unsupported']:.0f}"])
+        f"n: explained {c['supported']['n']} ({c['supported']['one_third']} 1/3 / {c['supported']['not_one_third']} not; "
+        f"328 / 333 at k = 30 / 20), unexplained {c['unsupported']['n']} ({c['unsupported']['one_third']} / {c['unsupported']['not_one_third']})",
+        f"median anchor token: explained {med['supported']:.0f}, unexplained {med['unsupported']:.0f}"])
     CAPTIONS["when_supported_vs_unsupported"] = (
         f"Whether the 7B's final number is 1/3 can be read from the residual stream (layer {L}) at positions before the "
-        f"first word that names the variable, for answers whose steps support the boxed number (supported, n = "
-        f"{c['supported']['n']}) and answers whose steps do not (unsupported, n = {c['unsupported']['n']}). Light blue: the "
-        f"supported probe on random subsets the size and class mix of the unsupported set (mean of {B['n_subsets']}, band "
+        f"first word that names the variable, for answers whose steps produce the boxed number (explained, n = "
+        f"{c['supported']['n']}) and answers whose steps do not (unexplained, n = {c['unsupported']['n']}). Light blue: the "
+        f"explained probe on random subsets the size and class mix of the unexplained set (mean of {B['n_subsets']}, band "
         f"5th–95th percentile). Dashed: 95th percentile of labels shuffled within phrasing; a probe above its line reads "
-        f"more than the phrasing. The unsupported curve rests on {c['unsupported']['n']} answers. Median position of the "
-        f"branch word: token {med['supported']:.0f} (supported), {med['unsupported']:.0f} (unsupported).")
+        f"more than the phrasing. The unexplained curve rests on {c['unsupported']['n']} answers. Median position of the "
+        f"branch word: token {med['supported']:.0f} (explained), {med['unsupported']:.0f} (unexplained).")
 
 
 def main():
