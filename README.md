@@ -1,5 +1,7 @@
 # bertrand
 
+[LessWrong article](https://www.lesswrong.com/posts/GymxEweup4GyNbpRE/a-problem-with-three-correct-answers-which-how-and-when-does)
+
 A look at how models (3 sizes of the Qwen 2.5 model family) behave when posed with Bertrand's paradox. 18 phrasings, up to 30 answers each. For each, we check which of the three famous responses it outputs, whether it explains the method or recalls it, and when the method choice shows up in the model's internals. 
 When models are posed with an ambiguous question, it is very useful to know whether we can identify their choice through the chain of thought transcript alone. We asked whether the method choice is represented in the model's activation before it is written down, and when.
 
@@ -8,8 +10,6 @@ Findings:
 * For the 7B, the phrasing nudges towards a final number (no radius given: ⅓, radius given: ½). For the smaller models, the distribution of final numbers remains consistent across phrasings. 
 * Most answers explain their reasoning (85% for 7B, 55% for 3B). The famous ⅓ is the one that gets recalled (plainly stated) most often, and the reasoning builds up to it while the model knows what it is supposed to reach (75% of ⅓s for 3B, 22% for 7B) 
 * The approach the model settles on becomes distinguishable only 5-10 tokens before the pivotal word (the one that nails the method down: "central angle", "perpendicular distance", and other similar ones). The reading at 30 tokens before it does not add anything else that the phrasing and the text up until that point didn't already provide, but a probe detects a 5-10 token build-up (from 53-57% to 79% at the exact position of the pivotal token).
-
-Post: [link to the post](https://example.com/TODO) (placeholder).
 
 ## Setup
 
