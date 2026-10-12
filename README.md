@@ -1,4 +1,4 @@
-# bertrand
+<img width="1600" height="551" alt="header" src="https://github.com/user-attachments/assets/237a6dec-62f4-4055-af98-4273db2f6aa9" />
 
 [LessWrong article](https://www.lesswrong.com/posts/GymxEweup4GyNbpRE/a-problem-with-three-correct-answers-which-how-and-when-does)
 
